@@ -1,10 +1,13 @@
 
 class Bag:
 
-    def __init__(self, capacity):
+    def __init__(self, capacity=0):
         self.capacity = capacity
         self.items = []
         self.items.append([0])
+
+    def set_cap(self, cap):
+        self.capacity = cap
 
     def add_item(self, weight, price):
         """""
@@ -42,26 +45,41 @@ class Bag:
             result_weight += self.items[index][0]
         return [result_weight, current[self.capacity][0], current[self.capacity][1]]
 
+def process(b: Bag, item):
+    pass
+
 
 if __name__ == "__main__":
-    bag = Bag(3)
-    bag.add_item(3, 55)
-    bag.add_item(2, 80)
-    bag.add_item(4, 60)
-    bag.add_item(1, 45)
+
+    bag = Bag()
+
+    while True:
+        size = input()
+        if size.isnumeric():
+            bag.set_cap(size)
+            break
+    while True:
+        try:
+            text = input()
+            if text != '':
+                process(bag, text)
+        except EOFError:
+            break
 
 
-    # bag = Bag(165)
-    # bag.add_item(23, 92)
-    # bag.add_item(31, 92)
-    # bag.add_item(29, 49)
-    # bag.add_item(44, 68)
-    # bag.add_item(53, 60)
-    # bag.add_item(38, 43)
-    # bag.add_item(63, 67)
-    # bag.add_item(85, 84)
-    # bag.add_item(89, 87)
-    # bag.add_item(82, 72)
+
+
+
+    bag.add_item(23, 92)
+    bag.add_item(31, 57)
+    bag.add_item(29, 49)
+    bag.add_item(44, 68)
+    bag.add_item(53, 60)
+    bag.add_item(38, 43)
+    bag.add_item(63, 67)
+    bag.add_item(85, 84)
+    bag.add_item(89, 87)
+    bag.add_item(82, 72)
     result = bag.calculate()
     print(result)
 
