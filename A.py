@@ -1,3 +1,4 @@
+import re
 
 class Bag:
 
@@ -10,12 +11,6 @@ class Bag:
         self.capacity = cap
 
     def add_item(self, weight, price):
-        """""
-        if [weight, price] not in self.items:    ВЫНЕСТИ В ОБРАБОТЧИК КОМАНД
-        
-        else:
-            print("error")
-        """""
         self.items.append([weight, price])
 
     def calculate(self):
@@ -45,8 +40,17 @@ class Bag:
             result_weight += self.items[index][0]
         return [result_weight, current[self.capacity][0], current[self.capacity][1]]
 
+
 def process(b: Bag, item):
-    pass
+    if re.fullmatch(r'[\d+]+ [\d+]+', item):
+        arguments = item.split(' ')
+        arguments[0] = int(arguments[0])
+        arguments[1] = int(arguments[1])
+        if arguments not in b.items:
+            b.add_item(arguments[0], arguments[1])
+            return
+    print('error')
+    return
 
 
 if __name__ == "__main__":
@@ -54,10 +58,16 @@ if __name__ == "__main__":
     bag = Bag()
 
     while True:
-        size = input()
-        if size.isnumeric():
-            bag.set_cap(size)
+        try:
+            size = input()
+            if size.isnumeric():
+                bag.set_cap(int(size))
+                break
+            else:
+                print('error')
+        except EOFError:
             break
+
     while True:
         try:
             text = input()
@@ -66,20 +76,7 @@ if __name__ == "__main__":
         except EOFError:
             break
 
-
-
-
-
-    bag.add_item(23, 92)
-    bag.add_item(31, 57)
-    bag.add_item(29, 49)
-    bag.add_item(44, 68)
-    bag.add_item(53, 60)
-    bag.add_item(38, 43)
-    bag.add_item(63, 67)
-    bag.add_item(85, 84)
-    bag.add_item(89, 87)
-    bag.add_item(82, 72)
     result = bag.calculate()
-    print(result)
-
+    print(result[0], result[1])
+    for elem_index in result[2]:
+        print(elem_index)
