@@ -1,5 +1,6 @@
 import re
 from itertools import combinations
+
 class Bag:
 
     def __init__(self, capacity=0):
@@ -17,9 +18,11 @@ class Bag:
         previous = {}
         current = {}
         weights = []
+
         for w in self.items:
             weights.append(w[0])
         weights.sort()
+
         previous[0] = [0, []]
         current[0] = [0, []]
         for i in range(2, len(self.items)+1):
@@ -32,8 +35,46 @@ class Bag:
                     if comb_weight not in previous:
                         previous[comb_weight] = [0, []]
                         current[comb_weight] = [0, []]
-        print('done')
-        
+        if self.capacity not in previous:
+            previous[self.capacity] = [0, []]
+            current[self.capacity] = [0, []]
+
+        for i in range(1, len(self.items)):
+            for key in current.keys():
+                if self.items[i][0] > key:
+                    current[key] = previous[key]
+                else:
+                    v = self.items[i][1]
+
+                    if key - self.items[i][0] in previous.keys():
+                        value = max(previous[key][0], v + previous[key - self.items[i][0]][0])
+
+                        if value == previous[key][0]:
+                            current[key] = previous[key]
+                        else:
+                            current[key][0] = value
+                            current[key][1] = [index for index in previous[key - self.items[i][0]][1]]
+                            current[key][1].append(i)
+                    else:
+                        value = max(previous[key][0], v)
+
+                        if value == previous[key][0]:
+                            current[key] = previous[key]
+                        else:
+                            current[key][0] = value
+                            current[key][1].append(i)
+
+            previous = current
+            if i != len(self.items)-1:
+                current = {}
+                for k in previous.keys():
+                    current[k] = [0, []]
+
+        result_weight = 0
+        for i in current[self.capacity][1]:
+            result_weight += self.items[i][0]
+        return [result_weight, current[self.capacity][0], current[self.capacity][1]]
+
         # previous = [[0, []] for _ in range(0, self.capacity+1)]
         # current = [[0, []] for _ in range(0, self.capacity+1)]
         # # массив вида current[i] = [value, [indexes]], где value - ценность всего рюкзака
@@ -75,19 +116,38 @@ def process(b: Bag, item):
 
 if __name__ == "__main__":
 
-    bag = Bag(5)
-    bag.add_item(3, 55)
-    bag.add_item(2, 80)
-    bag.add_item(4, 60)
-    bag.calculate()
-    """"
+    bag = Bag(0)
+    #
+    # bag.add_item(70000000, 135)
+    # bag.add_item(73000000, 139)
+    # bag.add_item(77000000, 149)
+    #
+    # bag.add_item(80000000, 150)
+    # bag.add_item(82000000, 156)
+    # bag.add_item(87000000, 163)
+    #
+    # bag.add_item(90000000, 173)
+    # bag.add_item(94000000, 184)
+    # bag.add_item(98000000, 192)
+    #
+    # bag.add_item(106000000, 201)
+    # bag.add_item(110000000, 210)
+    # bag.add_item(113000000, 214)
+    #
+    # bag.add_item(115000000, 221)
+    # bag.add_item(118000000, 229)
+    # bag.add_item(120000000, 240)
+    #
+    # res = bag.calculate()
+    # print(res)
+
     while True:
         try:
             size = input()
             if size.isnumeric():
                 bag.set_cap(int(size))
                 break
-            else:
+            elif size != '':
                 print('error')
         except EOFError:
             break
@@ -104,5 +164,3 @@ if __name__ == "__main__":
     print(result[0], result[1])
     for elem_index in result[2]:
         print(elem_index)
-        
-    """
