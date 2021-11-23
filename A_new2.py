@@ -30,8 +30,11 @@ class Bag:
         weights = {}
         for i in range(0, len(self.items)+1):
             weights[self.items[i][0][0]] = {}
-            # weights - словарь. Ключь - весь рюкзака.
-            # Значение - [максимальная ценность рюкзака, [список индексов предметов в при этой ценности]]
+            # weights - словарь
+            # ключ - вес рюкзака
+            # значение - словарь
+            #   ключ - индекс предмета в отсортированном массиве предметов
+            #   значение - [ценность рюкзака, [оригинальные индексы предметов в рюкзаке]]
         return weights
 
     def set_items_indexes(self):
@@ -40,27 +43,39 @@ class Bag:
             # присваиваем каждому предмету его изначальный индекс по порядку добавления
             # index - индекс в отсортированном массиве, index_origin - индекс в
             # исходном массиве
-    def recursive(self, bag_weight, item_weight, index, index_origin, weights):
+
+    def recursive(self, bag_weight, item_weight, index, weights, limit=None):
         previous_value = 0
-        if len(weights[bag_weight-item_weight]) == 0:
-            previous_value = self.recursive(bag_weight-item_weight, item_weight, index, index_origin, weights)
+        if bag_weight-item_weight not in weights.keys():
+            previous_value = self.recursive(bag_weight-item_weight, item_weight, index, weights)
+            self.recursive(bag_weight, item_weight, index, weights)
         else:
+            weights[bag_weight] = {}
             if item_weight <= bag_weight:
                 if index == 1:
-                    weights[bag_weight][item_weight] = [self.items[index_origin][0][1], [index_origin]]
+                    weights[bag_weight][index] = [self.items[index][0][1], [self.items[index][1][0]]]
+                elif index == 0:
+                    weights[bag_weight][index] = [0, []]
                 else:
-                    sum = self.items[index_origin][0][1] + weights[bag_weight-item_weight][index][0]
-                    previous_value = weights[bag_weight][self.items[index-1][0][0]]
-                    if sum > previous_value:
-                        weights[bag_weight][item_weight] = [sum, []]
-                        weights[bag_weight][item_weight][1] = \
-                            [i for i in weights[bag_weight-item_weight][item_weight][1]]
-                        if index_origin not in weights[bag_weight][item_weight][1]:
-                            weights[bag_weight][item_weight][1].append(index_origin)
+                    sum = self.items[index][0][1] + weights[bag_weight-item_weight][index][0]
+                    prev_v = weights[bag_weight][index-1][0]
+                    if sum > prev_v:
+                        weights[bag_weight][index] = [sum, []]
+                        weights[bag_weight][index][1] = \
+                            [i for i in weights[bag_weight-item_weight][index][1]]
+                        if self.items[index][1][0] not in weights[bag_weight][index][1]:
+                            weights[bag_weight][index][1].append(self.items[index][1][0])
                     else:
-                        weights[bag_weight][item_weight] = weights[bag_weight][self.items[index-1][0][0]]
-                        previous_value = weights[bag_weight][item_weight][0]
+                        weights[bag_weight][index] = weights[bag_weight][self.items[index-1][0][0]]
             else:
+                weights[bag_weight][index] = weights[bag_weight][index-1]
+
+            return weights[bag_weight][index][0]
+
+
+
+
+
 
 
     def calculate(self):
