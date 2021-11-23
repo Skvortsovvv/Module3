@@ -6,13 +6,13 @@ class Bag:
     def __init__(self, capacity=0):
         self.capacity = capacity
         self.items = []
-        self.items.append([0])
+        self.items.append([[0]])
 
     def set_cap(self, cap):
         self.capacity = cap
 
     def add_item(self, weight, price):
-        self.items.append([weight, price])
+        self.items.append([[weight, price]])
 
     def make_combines(self, row, weights):
         for i in range(2, len(self.items)+1):
@@ -27,23 +27,62 @@ class Bag:
         return row
 
     def make_weights(self):
-        weights = []
-        for w in self.items:
-            weights.append(w[0])
+        weights = {}
+        for i in range(0, len(self.items)+1):
+            weights[self.items[i][0][0]] = {}
+            # weights - словарь. Ключь - весь рюкзака.
+            # Значение - [максимальная ценность рюкзака, [список индексов предметов в при этой ценности]]
         return weights
+
+    def set_items_indexes(self):
+        for i in range(0, len(self.items) + 1):
+            self.items[i].append([i])
+            # присваиваем каждому предмету его изначальный индекс по порядку добавления
+            # index - индекс в отсортированном массиве, index_origin - индекс в
+            # исходном массиве
+    def recursive(self, bag_weight, item_weight, index, index_origin, weights):
+        previous_value = 0
+        if len(weights[bag_weight-item_weight]) == 0:
+            previous_value = self.recursive(bag_weight-item_weight, item_weight, index, index_origin, weights)
+        else:
+            if item_weight <= bag_weight:
+                if index == 1:
+                    weights[bag_weight][item_weight] = [self.items[index_origin][0][1], [index_origin]]
+                else:
+                    sum = self.items[index_origin][0][1] + weights[bag_weight-item_weight][index][0]
+                    previous_value = weights[bag_weight][self.items[index-1][0][0]]
+                    if sum > previous_value:
+                        weights[bag_weight][item_weight] = [sum, []]
+                        weights[bag_weight][item_weight][1] = \
+                            [i for i in weights[bag_weight-item_weight][item_weight][1]]
+                        if index_origin not in weights[bag_weight][item_weight][1]:
+                            weights[bag_weight][item_weight][1].append(index_origin)
+                    else:
+                        weights[bag_weight][item_weight] = weights[bag_weight][self.items[index-1][0][0]]
+                        previous_value = weights[bag_weight][item_weight][0]
+            else:
+
 
     def calculate(self):
         previous = {}
         current = {}
 
+        self.set_items_indexes()
+
+        self.items.sort(key=lambda item: item[0][0])
+
         weights = self.make_weights()
+        # создаем словарь из весов всех предметов, в который будет потом добавлять новые веса рюкзака
 
-        weights.sort()
+        self.items.sort(key=lambda item: item[0][0])
 
-        previous[0] = [0, []]
-        current[0] = [0, []]
-        previous = self.make_combines(previous, weights)
-        current = self.make_combines(current, weights)
+        for i in range(0, len(self.items)+1):
+            key = self.items[i][0][0]  # вес придмета
+            for bag_weight in weights.keys():
+                if key <= bag_weight:
+                    self.recursive(bag_weight-key, key, weights)
+                else:
+                    continue
 
         # for i in range(2, len(self.items)+1):
         #     comb = combinations(weights, i)
