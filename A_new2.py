@@ -45,10 +45,10 @@ class Bag:
             # исходном массиве
 
     def recursive(self, bag_weight, item_weight, index, weights, limit=None):
-        previous_value = 0
         if bag_weight-item_weight not in weights.keys():
-            previous_value = self.recursive(bag_weight-item_weight, item_weight, index, weights)
-            self.recursive(bag_weight, item_weight, index, weights)
+            self.recursive(bag_weight-item_weight, item_weight, index, weights)
+            if limit != bag_weight:
+                self.recursive(bag_weight, item_weight, index, weights)
         else:
             weights[bag_weight] = {}
             if item_weight <= bag_weight:
@@ -70,8 +70,7 @@ class Bag:
             else:
                 weights[bag_weight][index] = weights[bag_weight][index-1]
 
-            return weights[bag_weight][index][0]
-
+            return
 
 
 
@@ -95,55 +94,44 @@ class Bag:
             key = self.items[i][0][0]  # вес придмета
             for bag_weight in weights.keys():
                 if key <= bag_weight:
-                    self.recursive(bag_weight-key, key, weights)
+                    self.recursive(bag_weight-key, key, i, weights, bag_weight)
                 else:
                     continue
 
-        # for i in range(2, len(self.items)+1):
-        #     comb = combinations(weights, i)
-        #     for c in comb:
-        #         comb_weight = 0
-        #         for ci in c:
-        #             comb_weight += ci
-        #         if comb_weight <= self.capacity:
-        #             if comb_weight not in previous:
-        #                 previous[comb_weight] = [0, []]
-        #                 current[comb_weight] = [0, []]
-
-        if self.capacity not in previous:
-            previous[self.capacity] = [0, []]
-            current[self.capacity] = [0, []]
-
-        for i in range(1, len(self.items)):
-            for key in current.keys():
-                if self.items[i][0] > key:
-                    current[key] = previous[key]
-                else:
-                    v = self.items[i][1]
-
-                    if key - self.items[i][0] in previous.keys():
-                        value = max(previous[key][0], v + previous[key - self.items[i][0]][0])
-
-                        if value == previous[key][0]:
-                            current[key] = previous[key]
-                        else:
-                            current[key][0] = value
-                            current[key][1] = [index for index in previous[key - self.items[i][0]][1]]
-                            current[key][1].append(i)
-                    else:
-                        value = max(previous[key][0], v)
-
-                        if value == previous[key][0]:
-                            current[key] = previous[key]
-                        else:
-                            current[key][0] = value
-                            current[key][1].append(i)
-
-            previous = current
-            if i != len(self.items)-1:
-                current = {}
-                for k in previous.keys():
-                    current[k] = [0, []]
+        # if self.capacity not in previous:
+        #     previous[self.capacity] = [0, []]
+        #     current[self.capacity] = [0, []]
+        #
+        # for i in range(1, len(self.items)):
+        #     for key in current.keys():
+        #         if self.items[i][0] > key:
+        #             current[key] = previous[key]
+        #         else:
+        #             v = self.items[i][1]
+        #
+        #             if key - self.items[i][0] in previous.keys():
+        #                 value = max(previous[key][0], v + previous[key - self.items[i][0]][0])
+        #
+        #                 if value == previous[key][0]:
+        #                     current[key] = previous[key]
+        #                 else:
+        #                     current[key][0] = value
+        #                     current[key][1] = [index for index in previous[key - self.items[i][0]][1]]
+        #                     current[key][1].append(i)
+        #             else:
+        #                 value = max(previous[key][0], v)
+        #
+        #                 if value == previous[key][0]:
+        #                     current[key] = previous[key]
+        #                 else:
+        #                     current[key][0] = value
+        #                     current[key][1].append(i)
+        #
+        #     previous = current
+        #     if i != len(self.items)-1:
+        #         current = {}
+        #         for k in previous.keys():
+        #             current[k] = [0, []]
 
         result_weight = 0
         for i in current[self.capacity][1]:
