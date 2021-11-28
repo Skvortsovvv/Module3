@@ -1,5 +1,5 @@
 import re
-import sys
+
 
 class Bag:
 
@@ -19,20 +19,19 @@ class Bag:
         for i in range(0, len(self.items)):
             weights[self.items[i][0][0]] = {}
             # weights - словарь
-            # ключ - вес рюкзака
+            # ключ (bag_weight) - вес рюкзака
             # значение - словарь
-            #   ключ - индекс предмета в отсортированном массиве предметов
+            #   ключ (index) - индекс предмета в отсортированном массиве предметов
             #   значение - [ценность рюкзака, [оригинальные индексы предметов в рюкзаке]]
         return weights
 
     def set_items_indexes(self):
         for i in range(0, len(self.items)):
             self.items[i].append([i])
-            # присваиваем каждому предмету его изначальный индекс по порядку добавления
-            # index - индекс в отсортированном массиве, index_origin - индекс в
-            # исходном массиве
+            # Присваиваем каждому предмету его изначальный индекс по порядку добавления
 
-    def recursive(self, bag_weight, item_weight, index, weights, limit=None):
+
+    def recursive(self, bag_weight, item_weight, index, weights):
         if bag_weight-item_weight not in weights.keys():
             if bag_weight not in weights.keys():
                 weights[bag_weight] = {}
@@ -63,8 +62,6 @@ class Bag:
                         weights[bag_weight][index] = weights[bag_weight][index-1]
                 else:
                     weights[bag_weight][index] = weights[bag_weight][index - 1]
-            # if limit != bag_weight:
-            #     self.recursive(bag_weight, item_weight, index, weights)
         else:
             if bag_weight not in weights.keys():
                 weights[bag_weight] = {}
@@ -101,7 +98,6 @@ class Bag:
                         if index not in weights[bag_weight][index][1]:
                             weights[bag_weight][index][1].append(index)
                     else:
-                        # weights[bag_weight][index] = weights[bag_weight][index-1]
                         weights[bag_weight][index] = [prev_v, []]
                         weights[bag_weight][index][1] = \
                             [j for j in weights[bag_weight][index-1][1]]
@@ -114,24 +110,25 @@ class Bag:
     def calculate(self):
 
         self.set_items_indexes()
-        # устанавливаем индексы каждому предмету в соотв. порядка его добавления
+        # Устанавливаем индексы каждому предмету в соотв. порядка его добавления
 
         self.items.sort(key=lambda item: item[0][0])
-        # сортируем предметы по весу
+        # Сортируем предметы по весу
 
         weights = self.make_weights()
-        # создаем словарь из весов всех предметов, в который будет потом добавлять новые веса рюкзака
+        # Создаем словарь из весов всех предметов, в который будет потом добавлять новые веса рюкзака
 
         for i in range(0, len(self.items)):
             item_weight = self.items[i][0][0]  # вес предмета
             for bag_weight in list(weights):
-                self.recursive(bag_weight, item_weight, i, weights, bag_weight)
-
-        print()
+                self.recursive(bag_weight, item_weight, i, weights)
 
         for i in range(0, len(self.items)):
+            # Проходим по всем весам предметов, которые вычитаем рекурсивно вычитаем из максимальной
+            # грузоподъемности рюкзака, чтобы найти промежуточные веса рюкзака, при помощи которых найдем
+            # ценность при макс. грузе  при каждом возможном количестве предметов
             item_weight = self.items[i][0][0]
-            self.recursive(self.capacity, item_weight, i, weights, self.capacity)
+            self.recursive(self.capacity, item_weight, i, weights)
 
         result_weight = 0
         result_value = weights[self.capacity][len(self.items)-1][0]
@@ -145,7 +142,6 @@ class Bag:
         return [result_weight, result_value, indexes]
 
 
-
 def process(b: Bag, item):
     if re.fullmatch(r'[\d+]+ [\d+]+', item):
         arguments = item.split(' ')
@@ -157,80 +153,30 @@ def process(b: Bag, item):
     return
 
 
-def main():
-    sys.setrecursionlimit(1000000)
-    bag = Bag(750000000)
+if __name__ == "__main__":
 
-    bag.add_item(70000000, 135)
-    bag.add_item(73000000, 139)
-    bag.add_item(77000000, 149)
-    bag.add_item(80000000, 150)
-    bag.add_item(82000000, 156)
-    bag.add_item(87000000, 163)
-    bag.add_item(90000000, 173)
-    bag.add_item(94000000, 184)
-    bag.add_item(98000000, 192)
-    bag.add_item(106000000, 201)
-    bag.add_item(110000000, 210)
-    bag.add_item(113000000, 214)
-    bag.add_item(115000000, 221)
-    bag.add_item(118000000, 229)
-    bag.add_item(120000000, 240)
+    bag = Bag()
 
+    while True:
+        try:
+            size = input()
+            if size.isnumeric():
+                bag.set_cap(int(size))
+                break
+            elif size != '':
+                print('error')
+        except EOFError:
+            break
 
-
-    # bag.add_item(3, 55)
-    # bag.add_item(2, 80)
-    # bag.add_item(4, 60)
-
-    # bag.add_item(70, 135)
-    # bag.add_item(73, 139)
-    # bag.add_item(77, 149)
-    #
-    # bag.add_item(80, 150)
-    # bag.add_item(82, 156)
-    # bag.add_item(87, 163)
-    #
-    # bag.add_item(90, 173)
-    # bag.add_item(94, 184)
-    # bag.add_item(98, 192)
-    #
-    # bag.add_item(106, 201)
-    # bag.add_item(110, 210)
-    # bag.add_item(113, 214)
-    #
-    # bag.add_item(115, 221)
-    # bag.add_item(118, 229)
-    # bag.add_item(120, 240)
+    while True:
+        try:
+            text = input()
+            if text != '':
+                process(bag, text)
+        except EOFError:
+            break
 
     result = bag.calculate()
-    print(result)
-
-if __name__ == "__main__":
-    main()
-
-    # bag = Bag()
-    #
-    # while True:
-    #     try:
-    #         size = input()
-    #         if size.isnumeric():
-    #             bag.set_cap(int(size))
-    #             break
-    #         elif size != '':
-    #             print('error')
-    #     except EOFError:
-    #         break
-    #
-    # while True:
-    #     try:
-    #         text = input()
-    #         if text != '':
-    #             process(bag, text)
-    #     except EOFError:
-    #         break
-
-    # result = bag.calculate()
-    # print(result[0], result[1])
-    # for elem_index in result[2]:
-    #     print(elem_index)
+    print(result[0], result[1])
+    for elem_index in result[2]:
+        print(elem_index)
