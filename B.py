@@ -4,18 +4,15 @@ import re
 def greed(dig):
     counter = 0
     number = dig
-    steps = []
 
     while number != 0:
 
         if number % 2 == 0:
             number /= 2
             counter += 1
-            steps.append('dbl')
         elif number == 1:
             number -= 1
             counter += 1
-            steps.append('inc')
         elif number % 2 == 1:
             less = bin(int(number-1))[2:]
             more = bin(int(number+1))[2:]
@@ -26,11 +23,9 @@ def greed(dig):
             if power1 > power2:
                 number += 1
                 counter += 1
-                steps.append('dec')
             elif power1 < power2:
                 number -= 1
                 counter += 1
-                steps.append('inc')
 
             else:
                 index = len(more)//2
@@ -38,16 +33,13 @@ def greed(dig):
                     if int(less[i]) < int(more[i]):
                         number += 1
                         counter += 1
-                        steps.append('dec')
                         break
                     elif int(less[i]) > int(more[i]) or len(more) > len(less):
                         number -= 1
                         counter += 1
-                        steps.append('inc')
                         break
 
-    steps.reverse()
-    return steps
+    return counter
 
 if __name__ == "__main__":
 
