@@ -1,7 +1,8 @@
 import re
 
 
-def greed(dig):
+def greedy(dig):
+    operations = []
     counter = 0
     number = dig
 
@@ -10,9 +11,11 @@ def greed(dig):
         if number % 2 == 0:
             number /= 2
             counter += 1
+            operations.append('dbl')
         elif number == 1:
             number -= 1
             counter += 1
+            operations.append('inc')
         elif number % 2 == 1:
             less = bin(int(number-1))[2:]
             more = bin(int(number+1))[2:]
@@ -23,9 +26,11 @@ def greed(dig):
             if power1 > power2:
                 number += 1
                 counter += 1
+                operations.append('dec')
             elif power1 < power2:
                 number -= 1
                 counter += 1
+                operations.append('inc')
 
             else:
                 index = len(more)//2
@@ -33,13 +38,16 @@ def greed(dig):
                     if int(less[i]) < int(more[i]):
                         number += 1
                         counter += 1
+                        operations.append('dec')
                         break
                     elif int(less[i]) > int(more[i]) or len(more) > len(less):
                         number -= 1
                         counter += 1
+                        operations.append('inc')
                         break
+    operations.reverse()
+    return operations
 
-    return counter
 
 if __name__ == "__main__":
 
@@ -47,21 +55,8 @@ if __name__ == "__main__":
         try:
             num = input()
             if num != '':
-                result = greed(int(num))
-                print(result)
+                result = greedy(int(num))
+                for op in result:
+                    print(op)
         except EOFError:
             break
-
-
-
-
-
-
-
-
-
-
-    # while True:
-    #     number = input()
-    #     result = greed(int(number))
-    #     print('res', result)
