@@ -66,75 +66,56 @@ class Bag:
             if bag_weight not in weights.keys():
                 weights[bag_weight] = {}
                 weights[bag_weight][0] = [0, []]
+
             elif bag_weight - item_weight >= self.items[1][0][0]:
                 self.recursive(bag_weight-item_weight, item_weight, index, weights)
                 self.recursive(bag_weight, item_weight, index, weights)
+
             else:
                 if index-1 not in weights[bag_weight]:
                     self.recursive(bag_weight, self.items[index-1][0][0], index-1, weights)
                 _prev_v = weights[bag_weight][index-1][0]
                 _sum = self.items[index][0][1]
+
                 if self.items[index][0][0] <= bag_weight:
-                    if _sum == _prev_v:
-                        if self.items[index][0][0] < self.items[index-1][0][0]:
+                    if ((_sum == _prev_v) and (self.items[index][0][0] < self.items[index-1][0][0]))\
+                            or (_sum > _prev_v):
                             weights[bag_weight][index] = [_sum, []]
                             weights[bag_weight][index][1].append(index)
                             return
-                        # else:
-                        #     weights[bag_weight][index] = weights[bag_weight][index - 1]
-                    elif _sum > _prev_v:
-                        weights[bag_weight][index] = [_sum, []]
-                        weights[bag_weight][index][1].append(index)
-                        return
-                    # else:
-                    #     weights[bag_weight][index] = weights[bag_weight][index - 1]
-                # else:
-                #     weights[bag_weight][index] = weights[bag_weight][index - 1]
                 weights[bag_weight][index] = weights[bag_weight][index - 1]
         else:
             if bag_weight not in weights.keys():
                 weights[bag_weight] = {}
                 weights[bag_weight][0] = [0, []]
+
             elif index == 1:
                 weights[bag_weight][index] = [self.items[index][0][1], [index]]
+
             elif index == 0:
                 weights[bag_weight][index] = [0, []]
+
             else:
                 if index-1 not in weights[bag_weight-item_weight]:
                     self.recursive(bag_weight-item_weight, self.items[index-1][0][0], index-1, weights)
-
                 sum = self.items[index][0][1] + weights[bag_weight - item_weight][index - 1][0]
 
                 if index-1 not in weights[bag_weight]:
                     self.recursive(bag_weight, self.items[index-1][0][0], index-1, weights)
                 prev_v = weights[bag_weight][index-1][0]
-                if self.items[index][0][0] <= bag_weight:
-                    if sum == prev_v:
-                        if self.items[index][0][0] < self.items[index-1][0][0]:
-                            weights[bag_weight][index] = [sum, []]
-                            weights[bag_weight][index][1] = \
-                                [i for i in weights[bag_weight - item_weight][index - 1][1]]
-                            if index not in weights[bag_weight][index][1]:
-                                weights[bag_weight][index][1].append(index)
-                        else:
-                            weights[bag_weight][index] = [prev_v, []]
-                            weights[bag_weight][index][1] = \
-                                [j for j in weights[bag_weight][index - 1][1]]
 
-                    elif sum > prev_v:
+                if self.items[index][0][0] <= bag_weight:
+                    if ((sum == prev_v) and (self.items[index][0][0] < self.items[index-1][0][0])) or (sum > prev_v):
                         weights[bag_weight][index] = [sum, []]
                         weights[bag_weight][index][1] = \
-                            [i for i in weights[bag_weight-item_weight][index-1][1]]
+                            [i for i in weights[bag_weight - item_weight][index - 1][1]]
+
                         if index not in weights[bag_weight][index][1]:
                             weights[bag_weight][index][1].append(index)
-                    else:
-                        weights[bag_weight][index] = [prev_v, []]
-                        weights[bag_weight][index][1] = \
-                            [j for j in weights[bag_weight][index-1][1]]
-                else:
-                    weights[bag_weight][index] = [prev_v, []]
-                    weights[bag_weight][index][1] = \
-                        [j for j in weights[bag_weight][index - 1][1]]
+                            return
+                weights[bag_weight][index] = [prev_v, []]
+                weights[bag_weight][index][1] = \
+                    [j for j in weights[bag_weight][index - 1][1]]
         return
 
     def calculate(self):
@@ -172,7 +153,7 @@ class Bag:
         return [result_weight, result_value, indexes]
 
 
-def process(b: Bag, item):
+def process(b, item):
     if re.fullmatch(r'[\d+]+ [\d+]+', item):
         arguments = item.split(' ')
         arguments[0] = int(arguments[0])
