@@ -5,11 +5,16 @@ import re
 
 class Bloom:
 
-    def __init__(self, n, p, out=sys.stdout):
+    def __init__(self, n, p):
         self.__m = round((-n * math.log2(p) / math.log(2)))
         self.__k = round(-math.log2(p))
         self.__bits = bytearray([False for _ in range(0, self.__m)])
-        out.write(f'{self.__m} {self.__k}\n')
+
+    def get_m(self):
+        return self.__m
+
+    def get_k(self):
+        return self.__k
 
     @staticmethod
     def __get_prime(last_prime):
@@ -59,18 +64,6 @@ def process(bl: Bloom, cmd):
 
 if __name__ == "__main__":
 
-    # bl = Bloom(2, 0.250)
-    # bl.insert(7)
-    # bl.insert(5)
-    # bl.insert(14)
-    # bl.print()
-    # print(bl.search(7))
-    # print(bl.search(10))
-    # print(bl.search(15))
-    # print(bl.search(14))
-    # print(bl.search(5))
-    # print(bl.search(13))
-
     bloom = None
     flag = False
     while True:
@@ -81,14 +74,16 @@ if __name__ == "__main__":
             elif re.fullmatch(r'(set) (\d+) (1|0|(0\.\d+))', command):
                 if not flag:
                     params = command.split(' ')
-                    p = float(params[2])
-                    if (0 <= p) and (p <= 1):
-                        flag = True
-                        bloom = Bloom(int(params[1]), p)
-                        continue
-                else:
-                    print('error')
-                    continue
+                    if int(params[1]) > 0:
+                        p = float(params[2])
+                        if (0 <= p) and (p <= 1):
+                            if round(-math.log2(p)) > 0:
+                                flag = True
+                                bloom = Bloom(int(params[1]), p)
+                                print(bloom.get_m(), bloom.get_k())
+                                continue
+                print('error')
+                continue
             if flag:
                 process(bloom, command)
             else:
