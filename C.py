@@ -3,12 +3,27 @@ import sys
 import re
 
 
+class Bitarray:
+
+    def __init__(self, m):
+        self.size = m
+        self.array = bytearray(math.ceil(self.size/8))
+
+    def put(self, index):
+        self.array[index // 8] |= 2 ** (index % 8)
+
+    def get(self, index):
+        value = self.array[index // 8]
+        value = value & (2 ** (index % 8))
+        return value
+
+
 class Bloom:
 
     def __init__(self, n, p):
         self.__m = round((-n * math.log2(p) / math.log(2)))
         self.__k = round(-math.log2(p))
-        self.__bits = bytearray(math.ceil(self.__m/8))
+        self.__bits = Bitarray(self.__m)
         self.__primes = self.__k*[0]
         self.__primes[0] = 2
         prime = 2
@@ -38,21 +53,19 @@ class Bloom:
     def insert(self, number):
         for i in range(0, self.__k):
             index = (((i + 1) * number + self.__primes[i]) % 2147483647) % self.__m
-            self.__bits[index//8] |= 2**(index % 8)
+            self.__bits.put(index)
 
     def search(self, number):
         for i in range(0, self.__k):
             index = (((i + 1) * number + self.__primes[i]) % 2147483647) % self.__m
-            value = self.__bits[index // 8]
-            value = value & (2 ** (index % 8))
+            value = self.__bits.get(index)
             if not value > 0:
                 return 0
         return 1
 
     def print(self, out=sys.stdout):
         for i in range(0, self.__m):
-            value = self.__bits[i//8]
-            value = value & (2**(i % 8))
+            value = self.__bits.get(i)
             out.write(f'{(value > 0) * 1}')
         out.write('\n')
 
