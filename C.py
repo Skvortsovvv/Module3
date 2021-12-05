@@ -8,7 +8,9 @@ class Bloom:
     def __init__(self, n, p):
         self.__m = round((-n * math.log2(p) / math.log(2)))
         self.__k = round(-math.log2(p))
-        self.__bits = bytearray([False for _ in range(0, self.__m)])
+        self.__bits = bytearray(math.ceil(self.__m/8))
+        self.__primes = set()
+        self.__primes.add(2)
 
     def get_m(self):
         return self.__m
@@ -16,35 +18,43 @@ class Bloom:
     def get_k(self):
         return self.__k
 
-    @staticmethod
-    def __get_prime(last_prime):
+    def __get_prime(self, last_prime):
         prime = last_prime + 1
         while True:
-            if all(prime % i != 0 for i in range(2, int(math.sqrt(prime)) + 1)):
+            if prime in self.__primes:
+                return prime
+            if all(prime % i != 0 for i in self.__primes):
+                self.__primes.add(prime)
                 return prime
             prime += 1
 
     def insert(self, number):
         mersenne = 2147483647
-        prime = 1
+        prime = 2
         for i in range(0, self.__k):
-            prime = self.__get_prime(prime)
+            if i != 0:
+                prime = self.__get_prime(prime)
             index = (((i + 1) * number + prime) % mersenne) % self.__m
-            self.__bits[index] = True
+            self.__bits[index//8] |= 2**(index % 8)
 
     def search(self, number):
         mersenne = 2147483647
-        prime = 1
+        prime = 2
         for i in range(0, self.__k):
-            prime = self.__get_prime(prime)
+            if i != 0:
+                prime = self.__get_prime(prime)
             index = (((i + 1) * number + prime) % mersenne) % self.__m
-            if self.__bits[index] == 0:
+            value = self.__bits[index // 8]
+            value = value & (2 ** (index % 8))
+            if not value > 0:
                 return 0
         return 1
 
     def print(self, out=sys.stdout):
-        for i in range(0, len(self.__bits)):
-            out.write(f'{self.__bits[i] * 1}')
+        for i in range(0, self.__m):
+            value = self.__bits[i//8]
+            value = value & (2**(i % 8))
+            out.write(f'{(value > 0) * 1}')
         out.write('\n')
 
 
@@ -71,15 +81,15 @@ if __name__ == "__main__":
             command = input()
             if command == '':
                 continue
-            elif re.fullmatch(r'(set) (\d+) (1|0|(0\.\d+))', command):
-                if not flag:
+            elif not flag:
+                if re.fullmatch(r'(set) (\d+) (1|0|(0\.\d+))', command):
                     params = command.split(' ')
                     if int(params[1]) > 0:
-                        p = float(params[2])
-                        if (0 <= p) and (p <= 1):
-                            if round(-math.log2(p)) > 0:
+                        prob = float(params[2])
+                        if (0 <= prob) and (prob <= 1):
+                            if round(-math.log2(prob)) > 0:
                                 flag = True
-                                bloom = Bloom(int(params[1]), p)
+                                bloom = Bloom(int(params[1]), prob)
                                 print(bloom.get_m(), bloom.get_k())
                                 continue
                 print('error')
