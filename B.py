@@ -1,6 +1,21 @@
 import re
 
 
+def count_power(number):
+    power = 0
+    while number != 0:
+        power += number % 2
+        number = number // 2
+    return power
+
+def bin_leght(number):
+    lenght = 0
+    while number != 0:
+        lenght += 1
+        number //= 2
+    return lenght
+
+
 def greedy(dig):
     operations = []
     counter = 0
@@ -9,7 +24,7 @@ def greedy(dig):
     while number != 0:
 
         if number % 2 == 0:
-            number /= 2
+            number //= 2
             counter += 1
             operations.append('dbl')
         elif number == 1:
@@ -17,11 +32,11 @@ def greedy(dig):
             counter += 1
             operations.append('inc')
         elif number % 2 == 1:
-            less = bin(int(number-1))[2:]
-            more = bin(int(number+1))[2:]
+            less = number-1
+            more = number+1
 
-            power1 = len(re.findall(r'1', str(less)))
-            power2 = len(re.findall(r'1', str(more)))
+            power1 = count_power(less)
+            power2 = count_power(more)
 
             if power1 > power2:
                 number += 1
@@ -33,14 +48,15 @@ def greedy(dig):
                 operations.append('inc')
 
             else:
-                index = len(more)//2
-                for i in range(index, len(more)-1):
-                    if int(less[i]) < int(more[i]):
+                index = bin_leght(more)//2
+
+                for i in range(index - 1, -1, -1):
+                    if ((less >> i) % 2) < ((more >> i) % 2):
                         number += 1
                         counter += 1
                         operations.append('dec')
                         break
-                    elif int(less[i]) > int(more[i]) or len(more) > len(less):
+                    elif ((less >> i) % 2) > ((more >> i) % 2) or (bin_leght(more) > bin_leght(less)):
                         number -= 1
                         counter += 1
                         operations.append('inc')
@@ -50,6 +66,8 @@ def greedy(dig):
 
 
 if __name__ == "__main__":
+
+    #res = greedy(11)
 
     while True:
         try:
