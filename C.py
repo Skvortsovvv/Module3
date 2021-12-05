@@ -9,8 +9,11 @@ class Bloom:
         self.__m = round((-n * math.log2(p) / math.log(2)))
         self.__k = round(-math.log2(p))
         self.__bits = bytearray(math.ceil(self.__m/8))
-        self.__primes = set()
-        self.__primes.add(2)
+        self.__primes = self.__k*[0]
+        self.__primes[0] = 2
+        prime = 2
+        for i in range(1, self.__k):
+            self.__get_prime(prime, i)
 
     def get_m(self):
         return self.__m
@@ -18,32 +21,28 @@ class Bloom:
     def get_k(self):
         return self.__k
 
-    def __get_prime(self, last_prime):
+    def __get_prime(self, last_prime, j):
         prime = last_prime + 1
         while True:
-            if prime in self.__primes:
-                return prime
-            if all(prime % i != 0 for i in self.__primes):
-                self.__primes.add(prime)
-                return prime
-            prime += 1
+            for i in self.__primes:
+                if i == 0:
+                    self.__primes[j] = prime
+                    return
+                else:
+                    if prime % i != 0:
+                        continue
+                    else:
+                        prime += 1
+                        break
 
     def insert(self, number):
-        mersenne = 2147483647
-        prime = 2
         for i in range(0, self.__k):
-            if i != 0:
-                prime = self.__get_prime(prime)
-            index = (((i + 1) * number + prime) % mersenne) % self.__m
+            index = (((i + 1) * number + self.__primes[i]) % 2147483647) % self.__m
             self.__bits[index//8] |= 2**(index % 8)
 
     def search(self, number):
-        mersenne = 2147483647
-        prime = 2
         for i in range(0, self.__k):
-            if i != 0:
-                prime = self.__get_prime(prime)
-            index = (((i + 1) * number + prime) % mersenne) % self.__m
+            index = (((i + 1) * number + self.__primes[i]) % 2147483647) % self.__m
             value = self.__bits[index // 8]
             value = value & (2 ** (index % 8))
             if not value > 0:
@@ -96,7 +95,5 @@ if __name__ == "__main__":
                 continue
             if flag:
                 process(bloom, command)
-            else:
-                print('error')
         except EOFError:
             break
